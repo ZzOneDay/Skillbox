@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration status="WARN">
+    <appenders>
+        <File name="foundStations" fileName="logs/foundStations.log" immediateFlush="true">
+            <MarkerFilter marker="LOG4RequestStation" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="%d{yyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </File>
+        <File name="notFoundStations" fileName="logs/notFoundStations.log" immediateFlush="true">
+            <MarkerFilter marker="LOG4BadRequest" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="%d{yyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </File>
+        <File name="errors" fileName="logs/errors.log" immediateFlush="true">
+            <PatternLayout pattern="%d{yyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </File>
+    </appenders>
+    <loggers>
+        <root level="INFO">
+            <appender-ref ref="foundStations" level="info"/>
+            <appender-ref ref="notFoundStations" level="warn"/>
+            <appender-ref ref="errors" level="error"/>
+        </root>
+    </loggers>
+</configuration>
