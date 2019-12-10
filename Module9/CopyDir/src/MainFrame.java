@@ -20,6 +20,7 @@ public class MainFrame {
     JPanel SettingJPanel;
     private JCheckBox checkClone;
     private JLabel titleLogCheck;
+    private JCheckBox checkCorrectPath;
 
 
     MainFrame() {
@@ -44,19 +45,24 @@ public class MainFrame {
             try {
                 logString.setText("");
                 titleLogCheck.setText("");
-                if (!CopyCore.copyIsCorrect(openFile.getSelectedFile(),cloneFile.getSelectedFile().getPath())) {
+                if (!checkCorrectPath.isSelected() && !CopyCore.copyIsCorrect(openFile.getSelectedFile(), cloneFile.getSelectedFile().getPath())) {
                     throw new Exception("Конечная папка, в которую следует скопировать файлы," +
-                            "\nявляется дочерней для папки, в которой они находятся.");
+                            "\nявляется дочерней для папки, в которой они находятся." +
+                            "\nДля реализации данного копирования, " +
+                            "\nукажите флажок в пунке: Разрешить копирование в дочерную папку");
                 }
-                CopyCore.copy(openFile.getSelectedFile(), cloneFile.getSelectedFile().getPath());
+                CopyCore copyCore = new CopyCore(openFile.getSelectedFile());
+                copyCore.copy(cloneFile.getSelectedFile());
                 if (checkClone.isSelected()) {
                     if (SizeCore.checkFiles(openFile.getSelectedFile(),
                             new File(cloneFile.getSelectedFile().getPath()
                                     + "\\" + openFile.getSelectedFile().getName()))) {
                         titleLogCheck.setText("Проверка выполнена успешно");
                     } else {
-                        throw new Exception("Проверка файлов прошла не корректно!" +
-                                "\nРазмер исходника отличается от созданной копии!");
+                        if (!checkCorrectPath.isSelected()) {
+                            throw new Exception("Проверка файлов прошла не корректно!" +
+                                    "\nРазмер исходника отличается от созданной копии!");
+                        }
                     }
                 }
                 logString.setText("Копирование завершено");
