@@ -1,7 +1,6 @@
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -47,14 +46,15 @@ public class ListTransactions {
         HashMap<String, ArrayList<Transaction>> mapArrayTransactionSortedByGroup = new HashMap<>();
         ArrayList<Transaction> transactions = listTransactions.getTransactions();
         for (Transaction transaction : transactions) {
-            if (!mapArrayTransactionSortedByGroup.containsKey(transaction.getDescriptionOfTransaction())) {
-                //не находит
+            String groupKey = getCorrectNameGroup(transaction.getDescriptionOfTransaction());
+            if (!mapArrayTransactionSortedByGroup.containsKey(groupKey)) {
+                //List don't have this Key
                 ArrayList<Transaction> newList = new ArrayList<>();
                 newList.add(transaction);
-                mapArrayTransactionSortedByGroup.put(transaction.getDescriptionOfTransaction(), newList);
+                mapArrayTransactionSortedByGroup.put(groupKey, newList);
             } else {
-                //находит
-                mapArrayTransactionSortedByGroup.get(transaction.getDescriptionOfTransaction()).add(transaction);
+                //List have this key
+                mapArrayTransactionSortedByGroup.get(groupKey).add(transaction);
             }
         }
         return getNewTransactionsMap(mapArrayTransactionSortedByGroup);
@@ -70,23 +70,14 @@ public class ListTransactions {
         return listTransactionsSortedByGroup;
     }
 
-    public static String getCorrectNameGroup(String information) {
-        Pattern r = Pattern.compile("//.+\\t]");
+    private static String getCorrectNameGroup(String information) {
+        String needToCorrectPart = information;
+        information = information.replaceAll("\\\\","/");
+        Pattern r = Pattern.compile("/[-/ _<>A-Z0-9a-zА-Яа-я]+          ");
         Matcher m = r.matcher(information);
-        String needToCorrectPart = information.substring(m.start() + 1, m.end() - 1).replaceAll(",", ".");
-        return needToCorrectPart;
-    }
-
-    public static void printList (ListTransactions listTransactions) {
-        for (Transaction transaction : listTransactions.transactions) {
-            System.out.println("-------------------------------------------------------");
-            System.out.print(transaction.getAccountNumber());
-            System.out.print(transaction.getAccountType());
-            System.out.print(transaction.getCurrency());
-            System.out.print(transaction.getDateOfTransaction());
-            System.out.print(transaction.getDescriptionOfTransaction());
-            System.out.print(transaction.getReceipt());
-            System.out.println(transaction.getExpense());
+        if (m.find()) {
+            needToCorrectPart = information.substring(m.start(), m.end());
         }
+        return needToCorrectPart.trim();
     }
 }
