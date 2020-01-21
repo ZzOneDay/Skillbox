@@ -9,13 +9,14 @@ public class Main {
         MetroSiteParser metroSiteParser = new MetroSiteParser(html);
         InformationStationsParser informationStationsParser = new InformationStationsParser(metroSiteParser.getInformationAboutStations());
         HashMap<String, ArrayList<String>> list = informationStationsParser.getListStations();
-        Set<String> keys = list.keySet();
-        for (String key : keys) {
-            System.out.println(key);
-            for (String station : list.get(key)) {
-                System.out.println("\t" + station);
-            }
-        }
+
+//        Set<String> keys = list.keySet();
+//        for (String key : keys) {
+//            System.out.println(key);
+//            for (String station : list.get(key)) {
+//                System.out.println("\t" + station);
+//            }
+//        }
     }
 }
 

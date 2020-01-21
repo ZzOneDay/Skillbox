@@ -1,13 +1,14 @@
+import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.util.ArrayList;
+import java.util.FormatFlagsConversionMismatchException;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-class InformationStationsParser
-{
+class InformationStationsParser {
     private Elements informationAboutStations;
 
     HashMap<String, ArrayList<String>> getListStations() {
@@ -16,52 +17,87 @@ class InformationStationsParser
 
     private HashMap<String, ArrayList<String>> listStations;
 
-    InformationStationsParser (Elements informationAboutStations) {
+    InformationStationsParser(Elements informationAboutStations) {
         this.informationAboutStations = informationAboutStations;
         listStations = new HashMap<>();
         parseInformationAboutStations();
     }
 
-    private void parseInformationAboutStations () {
-        for (Element station : informationAboutStations) {
-            String[] info = parseStation(station);
-            addToList(info);
+    private void parseInformationAboutStations() {
+        //ArrayList<String[]> listConnect = getConnectsInformation(informationAboutStations.get(10));
+//        for(String[] connect : listConnect) {
+//            System.out.println("Number " + connect[0] + " stationName : " + connect[1]);
+//        }
+
+        for (Element information : informationAboutStations) {
+            String[] informationLine = getLineInformation(information);
+            String[] informationStation = getStationInformation(information);
+            System.out.println("NumberLine : " + informationLine[0] + "; NameLine : " + informationLine[1]);
+            System.out.println("NumberLine : " + informationStation[0] + "; NameStation : " + informationStation[1]);
+            ArrayList<String[]> listConnect = getConnectsInformation(information);
+            System.out.println("Пересадки");
+            for(String[] connect : listConnect) {
+                System.out.println("Number " + connect[0] + " stationName : " + connect[1]);
+            }
+            System.out.println("-----------------------------------------------------------------------------");
         }
     }
 
-    private String[] parseStation (Element informationAboutStation) {
-        String lineName = informationAboutStation.select("td").get(0).toString();
-        String stationName = informationAboutStation.select("td").get(1).toString();
-        return new String[]{getTextOfTitle(lineName),getTextOfTitle(stationName)};
+    private String[] getLineInformation(Element informationAboutStation) {
+        String lineInformation = informationAboutStation.select("td").get(0).toString(); // {NumberLine, NameLine}
+        String numberLine = getNumberLine(lineInformation);
+        String nameLine = getTextOfTitle(lineInformation);
+        return new String[]{numberLine, nameLine};
     }
 
-    private String getTextOfTitle (String information) {
+    private String[] getStationInformation(Element informationAboutStation) {
+        String stationInformation = informationAboutStation.select("td").get(1).toString(); // {NumberLine, NameStation}
+        String numberLine = getLineInformation(informationAboutStation)[0];
+        String stationName = getTextOfTitle(stationInformation);
+        return new String[]{numberLine, stationName};
+    }
+
+
+    private ArrayList<String[]> getConnectsInformation(Element informationAboutStation) {
+        Element informationConnect = informationAboutStation.select("td").get(3);
+        Elements elements = informationConnect.select("span");
+        ArrayList<String[]> listConnect = new ArrayList<>();
+
+        for (int i = 0; i < elements.size(); i = i + 2) {
+            String number = getOnlyInteger(elements.get(i).toString());
+            String station = getTextOfTitle(elements.get(i+1).toString());
+            listConnect.add(new String[]{number,station.substring(19)});
+        }
+//        if (listConnect.size() != 0) {
+//            listConnect.add(getStationInformation(informationAboutStation)); //Станция с которой переходят
+//        }
+        return listConnect; // {ArrayList<[]Connects> - > {Line, Stations}}
+    }
+
+    private String getTextOfTitle(String information) {
         Pattern pattern = Pattern.compile("\" title=\"");
         Matcher matcher = pattern.matcher(information);
         if (matcher.find()) {
-            information = information.substring(matcher.start());
+            information = information.substring(matcher.end());
         }
-        return clearText(information);
+        int lastIndex = information.indexOf("\"");
+        return information.substring(0, lastIndex);
     }
 
-    private String clearText (String text) {
-        //"some information" - > some information
-        int firstIndex = text.indexOf("title=\"")+7;
-        text = text.substring(firstIndex);
-        int lastIndex = text.indexOf("\"");
-        return text.substring(0,lastIndex);
+    private String getNumberLine(String information) {
+        Pattern pattern = Pattern.compile("<td data-sort-value=\"[0-9.]+\"");
+        Matcher matcher = pattern.matcher(information);
+        if (matcher.find()) {
+            information = information.substring(matcher.start(), matcher.end());
+        }
+        information = getOnlyInteger(information);
+        if (information.length() == 1) {
+            return "0"+information;
+        }
+        return getOnlyInteger(information);
     }
 
-    private void addToList (String[] info) {
-        String line = info[0];
-        String station = info[1];
-        if (listStations.containsKey(line)) {
-            listStations.get(line).add(station);
-        }
-        else {
-            ArrayList<String> stations = new ArrayList<>();
-            stations.add(station);
-            listStations.put(line,stations);
-        }
+    private String getOnlyInteger(String text) {
+        return text.replaceAll("[^0-9.]+", "");
     }
 }
