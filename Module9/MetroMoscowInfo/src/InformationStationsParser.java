@@ -1,47 +1,40 @@
-import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.util.ArrayList;
-import java.util.FormatFlagsConversionMismatchException;
-import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 class InformationStationsParser {
     private Elements informationAboutStations;
 
-    HashMap<String, ArrayList<String>> getListStations() {
-        return listStations;
-    }
+    private ArrayList<String[]> lines = new ArrayList<>(); //{NumberLine, NameLine}
+    private TreeMap<String, ArrayList<String>> stationsMap = new TreeMap<>(); //{NumberLine, NameStation}
+    private ArrayList<ArrayList<String[]>> connectsList = new ArrayList<>(); //{NumberLine, NameStation}
 
-    private HashMap<String, ArrayList<String>> listStations;
 
     InformationStationsParser(Elements informationAboutStations) {
         this.informationAboutStations = informationAboutStations;
-        listStations = new HashMap<>();
         parseInformationAboutStations();
     }
 
     private void parseInformationAboutStations() {
-        //ArrayList<String[]> listConnect = getConnectsInformation(informationAboutStations.get(10));
-//        for(String[] connect : listConnect) {
-//            System.out.println("Number " + connect[0] + " stationName : " + connect[1]);
-//        }
-
         for (Element information : informationAboutStations) {
-            String[] informationLine = getLineInformation(information);
-            String[] informationStation = getStationInformation(information);
-            System.out.println("NumberLine : " + informationLine[0] + "; NameLine : " + informationLine[1]);
-            System.out.println("NumberLine : " + informationStation[0] + "; NameStation : " + informationStation[1]);
-            ArrayList<String[]> listConnect = getConnectsInformation(information);
-            System.out.println("Пересадки");
-            for(String[] connect : listConnect) {
-                System.out.println("Number " + connect[0] + " stationName : " + connect[1]);
+            lines.add(getLineInformation(information));
+
+            String[] station = getStationInformation(information);
+            addToStationsMap(station);
+
+            ArrayList<String[]> connectInOnePlace = getConnectsInformation(information);
+            if (connectInOnePlace.size() != 0) {
+                connectInOnePlace.add(0, station);
+                connectsList.add(connectInOnePlace);
             }
-            System.out.println("-----------------------------------------------------------------------------");
         }
     }
+
+    //---------------------------------------------------------------------------------------------------------------
 
     private String[] getLineInformation(Element informationAboutStation) {
         String lineInformation = informationAboutStation.select("td").get(0).toString(); // {NumberLine, NameLine}
@@ -68,11 +61,10 @@ class InformationStationsParser {
             String station = getTextOfTitle(elements.get(i+1).toString());
             listConnect.add(new String[]{number,station.substring(19)});
         }
-//        if (listConnect.size() != 0) {
-//            listConnect.add(getStationInformation(informationAboutStation)); //Станция с которой переходят
-//        }
         return listConnect; // {ArrayList<[]Connects> - > {Line, Stations}}
     }
+
+    //---------------------------------------------------------------------------------------------------------------
 
     private String getTextOfTitle(String information) {
         Pattern pattern = Pattern.compile("\" title=\"");
@@ -99,5 +91,32 @@ class InformationStationsParser {
 
     private String getOnlyInteger(String text) {
         return text.replaceAll("[^0-9.]+", "");
+    }
+
+    //---------------------------------------------------------------------------------------------------------------
+
+    private void addToStationsMap (String[] station) {
+        if (stationsMap.containsKey(station[0])) {
+            stationsMap.get(station[0]).add(station[1]);
+        }
+        else {
+            ArrayList<String> stationsOnLine = new ArrayList<>();
+            stationsOnLine.add(station[1]);
+            stationsMap.put(station[0],stationsOnLine);
+        }
+    }
+
+    //---------------------------------------------------------------------------------------------------------------
+
+    public ArrayList<String[]> getLines() {
+        return lines;
+    }
+
+    public TreeMap<String, ArrayList<String>> getStationsMap() {
+        return stationsMap;
+    }
+
+    public ArrayList<ArrayList<String[]>> getConnectsList() {
+        return connectsList;
     }
 }
