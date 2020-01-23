@@ -1,9 +1,12 @@
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Set;
 
 public class InformationStationsJSon {
     private InformationStationsParser informationStationsParser;
@@ -12,11 +15,10 @@ public class InformationStationsJSon {
         this.informationStationsParser = informationStationsParser;
     }
 
-    public void saveJsonFile (String path) {
-        JSONObject completedJSonObject = getMainJsonObjectToWrite();
-
+    public void saveJsonFile(String path) {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
         try (FileWriter file = new FileWriter(path)) {
-            completedJSonObject.writeJSONString(file);
+            gson.toJson(getMainJsonObjectToWrite(), file);
             file.flush();
         } catch (IOException e) {
             e.printStackTrace();
@@ -24,8 +26,7 @@ public class InformationStationsJSon {
     }
 
 
-
-    private JSONObject getMainJsonObjectToWrite () {
+    private JSONObject getMainJsonObjectToWrite() {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("Station", getStations());
         jsonObject.put("Connection", getConnections());
