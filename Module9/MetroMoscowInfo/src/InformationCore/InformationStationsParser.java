@@ -1,8 +1,7 @@
-import com.google.gson.internal.bind.util.ISO8601Utils;
-import com.sun.source.tree.Tree;
+package InformationCore;
+
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.w3c.dom.ls.LSOutput;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -114,15 +113,15 @@ class InformationStationsParser {
 
     //---------------------------------------------------------------------------------------------------------------
 
-    public ArrayList<String[]> getLines() {
+    ArrayList<String[]> getLines() {
         return lines;
     }
 
-    public TreeMap<String, ArrayList<String>> getStationsMap() {
+    TreeMap<String, ArrayList<String>> getStationsMap() {
         return stationsMap;
     }
 
-    public ArrayList<ArrayList<String[]>> getConnectsList() {
+    ArrayList<ArrayList<String[]>> getConnectsList() {
         return connectsList;
     }
 }

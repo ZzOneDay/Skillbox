@@ -1,3 +1,5 @@
+package InformationCore;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.json.simple.JSONArray;
@@ -6,16 +8,15 @@ import org.json.simple.JSONObject;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Set;
 
-public class InformationStationsJSon {
+class InformationStationsJSon {
     private InformationStationsParser informationStationsParser;
 
     InformationStationsJSon(InformationStationsParser informationStationsParser) {
         this.informationStationsParser = informationStationsParser;
     }
 
-    public void saveJsonFile(String path) {
+    void saveJsonFile(String path) {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         try (FileWriter file = new FileWriter(path)) {
             gson.toJson(getMainJsonObjectToWrite(), file);

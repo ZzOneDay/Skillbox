@@ -1,18 +1,16 @@
+package InformationCore;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
 
-class MetroSiteParser {
+public class MetroSiteParser {
 
     private Elements informationAboutStations;
 
-    Elements getInformationAboutStations() {
-        return informationAboutStations;
-    }
-
-    MetroSiteParser(String pathHtmlMetroSite) {
+    public MetroSiteParser(String pathHtmlMetroSite) {
         try {
             Document informationAboutMetro = getDocument(pathHtmlMetroSite);
             informationAboutStations = getStationsOfInformation(informationAboutMetro);
@@ -38,5 +36,11 @@ class MetroSiteParser {
             stations.add(elements.select("tr:nth-child(" + i + ")").get(0));
         }
         return stations;
+    }
+
+    public void saveJSonFile (String path) {
+        InformationStationsParser informationStationsParser = new InformationStationsParser(informationAboutStations);
+        InformationStationsJSon jsonInformation = new InformationStationsJSon(informationStationsParser);
+        jsonInformation.saveJsonFile(path); //save file
     }
 }
