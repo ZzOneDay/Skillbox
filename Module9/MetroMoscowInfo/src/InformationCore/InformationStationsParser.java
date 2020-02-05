@@ -4,15 +4,13 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 class InformationStationsParser {
     private Elements informationAboutStations;
 
-    private ArrayList<String[]> lines = new ArrayList<>(); //{NumberLine, NameLine}
+    private TreeMap<String,String> lines = new TreeMap<>(); //{NumberLine, NameLine}
     private TreeMap<String, ArrayList<String>> stationsMap = new TreeMap<>(); //{NumberLine, NameStation}
-    private ArrayList<ArrayList<String[]>> connectsList = new ArrayList<>(); //{NumberLine, NameStation}
+    private ArrayList<ArrayList<String[]>> connectsList = new ArrayList<>(); //{Station[], connectStations[]}
 
 
     InformationStationsParser(Elements informationAboutStations) {
@@ -21,21 +19,16 @@ class InformationStationsParser {
     }
 
     private void parseInformationAboutStations() {
-        String numberLine = "";
         for (Element information : informationAboutStations) {
             String[] line = getLineInformation(information);
-            if (!numberLine.equals(line[0])) {
-                lines.add(line);
-                numberLine = line[0];
-            }
+            lines.put(line[0],line[1]);
 
             String[] station = getStationInformation(information);
             addToStationsMap(station);
 
-            ArrayList<String[]> connectInOnePlace = getConnectsInformation(information);
-            if (connectInOnePlace.size() != 0) {
-                connectInOnePlace.add(0, station);
-                connectsList.add(connectInOnePlace);
+            ArrayList<String[]> list = getConnectsInformation(information);
+            if (list != null) {
+                connectsList.add(list);
             }
         }
     }
@@ -43,60 +36,33 @@ class InformationStationsParser {
     //---------------------------------------------------------------------------------------------------------------
 
     private String[] getLineInformation(Element informationAboutStation) {
-        String lineInformation = informationAboutStation.select("td").get(0).toString(); // {NumberLine, NameLine}
-        String numberLine = getNumberLine(lineInformation);
-        String nameLine = getTextOfTitle(lineInformation);
+        String numberLine = informationAboutStation.select("td").get(0).select("span.sortkey").get(0).text();
+        String nameLine = informationAboutStation.select("a").get(0).attr("title");
         return new String[]{numberLine, nameLine};
     }
 
     private String[] getStationInformation(Element informationAboutStation) {
-        String stationInformation = informationAboutStation.select("td").get(1).toString(); // {NumberLine, NameStation}
         String numberLine = getLineInformation(informationAboutStation)[0];
-        String stationName = getTextOfTitle(stationInformation);
+        String stationName = informationAboutStation.select("a").get(1).attr("title");
         return new String[]{numberLine, stationName};
     }
 
 
     private ArrayList<String[]> getConnectsInformation(Element informationAboutStation) {
-        Element informationConnect = informationAboutStation.select("td").get(3);
-        Elements elements = informationConnect.select("span");
-        ArrayList<String[]> listConnect = new ArrayList<>();
+        String[] mainStation = getStationInformation(informationAboutStation);
+        ArrayList<String[]> connectStations = new ArrayList<>();
+        connectStations.add(mainStation);
+        Elements elements = informationAboutStation.select("td").select("span.sortkey");
+        for (int i = 2; i< elements.size(); i++) {
+            String numberLine = elements.get(i).text();
+            String stationName = elements.get(i).parent().select("a").attr("title");
 
-        for (int i = 0; i < elements.size(); i = i + 2) {
-            String number = getOnlyInteger(elements.get(i).toString());
-            String station = getTextOfTitle(elements.get(i + 1).toString());
-            listConnect.add(new String[]{number, station.substring(19)});
+            connectStations.add(new String[]{numberLine,stationName});
         }
-        return listConnect; // {ArrayList<[]Connects> - > {Line, Stations}}
-    }
-
-    //---------------------------------------------------------------------------------------------------------------
-
-    private String getTextOfTitle(String information) {
-        Pattern pattern = Pattern.compile("\" title=\"");
-        Matcher matcher = pattern.matcher(information);
-        if (matcher.find()) {
-            information = information.substring(matcher.end());
+        if (connectStations.size() == 1) {
+            return null;
         }
-        int lastIndex = information.indexOf("\"");
-        return information.substring(0, lastIndex);
-    }
-
-    private String getNumberLine(String information) {
-        Pattern pattern = Pattern.compile("<td data-sort-value=\"[0-9.]+\"");
-        Matcher matcher = pattern.matcher(information);
-        if (matcher.find()) {
-            information = information.substring(matcher.start(), matcher.end());
-        }
-        information = getOnlyInteger(information);
-        if (information.length() == 1) {
-            return "0" + information;
-        }
-        return getOnlyInteger(information);
-    }
-
-    private String getOnlyInteger(String text) {
-        return text.replaceAll("[^0-9.]+", "");
+        return connectStations; // {MainStation, ArrayList<[]Connects>} - > {Station - {Line, Stations}}
     }
 
     //---------------------------------------------------------------------------------------------------------------
@@ -113,7 +79,7 @@ class InformationStationsParser {
 
     //---------------------------------------------------------------------------------------------------------------
 
-    ArrayList<String[]> getLines() {
+    TreeMap<String,String> getLines() {
         return lines;
     }
 
@@ -121,7 +87,10 @@ class InformationStationsParser {
         return stationsMap;
     }
 
+
     ArrayList<ArrayList<String[]>> getConnectsList() {
         return connectsList;
     }
+
+
 }

@@ -8,6 +8,8 @@ import org.json.simple.JSONObject;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
 
 class InformationStationsJSon {
     private InformationStationsParser informationStationsParser;
@@ -58,12 +60,13 @@ class InformationStationsJSon {
 
     private JSONArray getLines() {
         JSONArray lines = new JSONArray();
-        for (String[] lineInformation : informationStationsParser.getLines()) {
-            JSONObject line = new JSONObject();
-            line.put("Number", lineInformation[0]);
-            line.put("Name", lineInformation[1]);
-            lines.add(line);
-        }
+        Set<String> keySet = informationStationsParser.getLines().keySet();
+        for (String key : keySet) {
+                JSONObject line = new JSONObject();
+                line.put("Number", key);
+                line.put("Name", informationStationsParser.getLines().get(key));
+                lines.add(line);
+            }
         return lines;
     }
 }

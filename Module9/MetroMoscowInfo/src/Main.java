@@ -25,10 +25,6 @@ public class Main {
             System.out.println("Line number: " + line.getNumber() + " Name Line: " + line.getName());
             for (Station station : stationMap.get(line)) {
                 System.out.println("\t" + station.getName()); // + " - " + station.getNumberLine());
-                if (stationMapConnects.containsKey(station.getName())) {
-                    for (Station connectTo : stationMapConnects.get(station.getName()))
-                    System.out.println("\t\t|--> Connect to " + connectTo.getName() + " -> " + connectTo.getName());
-                }
             }
             System.out.println();
         }
