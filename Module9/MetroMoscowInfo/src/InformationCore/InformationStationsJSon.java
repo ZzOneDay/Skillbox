@@ -8,6 +8,7 @@ import org.json.simple.JSONObject;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -39,7 +40,16 @@ class InformationStationsJSon {
 
     private JSONObject getStations() {
         JSONObject stations = new JSONObject();
-        stations.putAll(informationStationsParser.getStationsMap());
+        for (String line : informationStationsParser.getStationsMap().keySet()) {
+            JSONArray jsonArray = new JSONArray();
+            if (informationStationsParser.getStationsMap().get(line) != null) {
+                for (String station : informationStationsParser.getStationsMap().get(line)) {
+                    jsonArray.add(station);
+                }
+            }
+            stations.put(line,jsonArray);
+        }
+        //TODO Чтобы JSonFile создавался упорядочным, нужно использовать GSON. Перевести весь проект на GSON?
         return stations;
     }
 

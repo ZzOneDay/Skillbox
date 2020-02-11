@@ -16,7 +16,7 @@ public class Metro {
     private JSONParser parser = new JSONParser();
     private ArrayList<Line> lines = new ArrayList<>();
     private Map<Line, ArrayList<Station>> mapStationsOfLine = new HashMap<>();
-    private Map<String,ArrayList<Station>> mapConnectStationsOfStation = new HashMap<>();
+    private Map<Station,ArrayList<Station>> mapConnectStationsOfStation = new HashMap<>();
 
 
     public Metro(String pathJSonFileMetro) {
@@ -73,7 +73,13 @@ public class Metro {
                     JSONObject jsonStation = (JSONObject) stations.get(i);
                     String numberLine = (String) jsonStation.get("Line");
                     String nameStation = (String) jsonStation.get("Station");
-                    Station station = new Station(numberLine, nameStation);
+
+                    Line line = getLineOfNumber(numberLine);
+                    if (line == null) {
+                        System.out.println(numberLine + "E R R O R");
+                    }
+                    Station station = getStation(line, nameStation);
+
                     if (i == 0) {
                         main = station;
                     }
@@ -81,7 +87,7 @@ public class Metro {
                         list.add(station);
                     }
                 }
-                mapConnectStationsOfStation.put(main.getName(), list);
+                mapConnectStationsOfStation.put(main, list);
             }
         } catch (ParseException e) {
             e.printStackTrace();
@@ -106,7 +112,7 @@ public class Metro {
         return null;
     }
 
-    private Line getLineOfNumber (String number) {
+    public Line getLineOfNumber (String number) {
         for (Line line : lines) {
             if (line.getNumber().equals(number)) {
                 return line;
@@ -116,13 +122,15 @@ public class Metro {
     }
 
     private Station getStation (Line line, String stationName) {
-        for (Station station : mapStationsOfLine.get(line)) {
-            if (station.getName().equals(stationName)) {
-                return station;
+        try {
+            for (Station station : mapStationsOfLine.get(line)) {
+                if (station.getName().equals(stationName)) {
+                    return station;
+                }
             }
+        } catch (Exception e)  {
+            System.out.println("не нашел станцию: " + line);
         }
-        System.out.println(line.getName() + line.getNumber() + stationName);
-        System.err.println("Станция не найдена");
         return null;
     }
 
@@ -136,7 +144,7 @@ public class Metro {
         return mapStationsOfLine;
     }
 
-    public Map<String, ArrayList<Station>> getMapConnectStationsOfStation() {
+    public Map<Station, ArrayList<Station>> getMapConnectStationsOfStation() {
         return mapConnectStationsOfStation;
     }
 
