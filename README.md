@@ -10,7 +10,7 @@ Programm:
 Исключения, отладка, тестирование и логирование
 Работа с файлами и сетью
 
-Now, My university open new programm for send homework, now I am using GitLab. 
+Now, My university opened new programm for send homework, now I am using GitLab. 
 
 If you want, my homeWork of new Programm:
 Работа с MySQL в Java
